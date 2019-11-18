@@ -1,0 +1,75 @@
+title: "Plotting C.elegans neuron positions in 3D"
+author: "Friedrich Preußer"
+date: "11/18/2019"
+output: html_document
+
+```{r setup, include=FALSE}
+library(nat)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+
+```
+
+### Define neurons here
+```{r, include=TRUE}
+amphids=c("ASEL","ASER",
+          "ASGL","ASGR",
+          "ASHL","ASHR",
+          "ASIL","ASIR",
+          "ASJL","ASJR",
+          "ASKL","ASKR")
+  
+
+inner_labial_neurons <- c("IL1DL", "IL1DR",
+                          "IL1L","IL1R",
+                          "IL1VL","IL1VR",
+                          "IL2DL","IL2DR",
+                          "IL2L","IL2R",
+                          "IL2VL","IL2VR")
+
+amphid_interneurons <- c("AIAL","AIAR",
+                         "AIBL","AIBR",
+                         "AIML","AIMR",
+                         "AIYL","AIYR",
+                         "AIZL","AIZR",
+                         "AFDL","AFDR")
+
+neuron_IDs = c(amphids,
+               inner_labial_neurons,
+               amphid_interneurons
+)
+
+```
+
+### Load neuron positions and convert to dataframe
+```{r , include=TRUE, warning=FALSE}
+neuronsurls=paste0("https://raw.githubusercontent.com/openworm/CElegansNeuroML/",
+                                 "103d500e066125688aa7ac5eac7e9b2bb4490561/CElegans/generatedNeuroML/",neuron_IDs,
+                                 ".morph.xml")
+
+
+
+neurons = read.neurons(neuronsurls, neuronnames=neuron_IDs)
+
+length_list <- length(neuron_IDs)
+#get neuron positions with names into dataframe
+library(purrr)
+s <- map(1:length_list,function(x) neurons[[x]][8])
+dd <- map_dfr(1:length_list, function(x) cbind(s[[x]]$d,group=neuron_IDs[x]))
+
+dd <- dd %>%
+  mutate(neuron_loc = ifelse(PointNo == 1, "YES","NO")) %>%
+  mutate(neuron_pair = gsub('.{1}$', '', group))
+
+```
+
+### Create plot
+```{r, include=TRUE, warning=FALSE}
+p3d <- plot_ly() %>% 
+  add_trace(data=filter(dd,neuron_loc == "YES"), x=~X, y=~Y, z=~Z, type="scatter3d", mode="markers",color=~neuron_pair,text = ~group,hoverinfo = 'text') %>%
+  add_trace(data=dd, x=~X, y=~Y, z=~Z, type="scatter3d", mode="lines",color=~neuron_pair,hoverinfo='skip')
+
+p3d
+
+```
