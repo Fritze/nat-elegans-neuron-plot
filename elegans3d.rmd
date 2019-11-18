@@ -43,6 +43,8 @@ neuron_IDs = c(amphids,
 ```
 
 ### Load neuron positions and convert to dataframe
+#### Data comes from the openworm project (https://github.com/openworm)
+#### Files for all neurons can be found here: https://github.com/openworm/CElegansNeuroML/tree/master/CElegans/generatedNeuroML
 ```{r , include=TRUE, warning=FALSE}
 neuronsurls=paste0("https://raw.githubusercontent.com/openworm/CElegansNeuroML/",
                                  "103d500e066125688aa7ac5eac7e9b2bb4490561/CElegans/generatedNeuroML/",neuron_IDs,
